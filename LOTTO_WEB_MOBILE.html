@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎲 Lotto Gem Mobile</title>
+    <meta name="theme-color" content="#1e1e2f">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1e1e2f, #2d2d44);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .title {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #00e676, #33ff99);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            text-align: center;
+            opacity: 0.7;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: rgba(40, 40, 64, 0.8);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        select, button {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            background: rgba(62, 62, 95, 0.8);
+            color: #fff;
+        }
+
+        button {
+            background: linear-gradient(45deg, #00e676, #33ff99);
+            color: #1e1e2f;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .numbers-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .lotto-ball {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+            color: #fff;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .ball-1-10 { background: linear-gradient(45deg, #fbc400, #f9a825); }
+        .ball-11-20 { background: linear-gradient(45deg, #69c8f2, #29b6f6); }
+        .ball-21-30 { background: linear-gradient(45deg, #ff7272, #f44336); }
+        .ball-31-40 { background: linear-gradient(45deg, #aaaaaa, #8e8e8e); }
+        .ball-41-45 { background: linear-gradient(45deg, #b0d840, #8bc34a); }
+
+        .game-card {
+            background: rgba(40, 40, 64, 0.6);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .game-title {
+            text-align: center;
+            margin-bottom: 15px;
+            opacity: 0.8;
+        }
+
+        .status {
+            text-align: center;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .status.success { background: rgba(76, 175, 80, 0.2); }
+        .status.error { background: rgba(244, 67, 54, 0.2); }
+        .status.warning { background: rgba(255, 152, 0, 0.2); }
+
+        .method-info {
+            font-size: 0.9em;
+            opacity: 0.7;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 480px) {
+            .container { padding: 10px; }
+            .title { font-size: 2em; }
+            .lotto-ball { width: 45px; height: 45px; font-size: 16px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🎲 Lotto Gem</h1>
+        <p class="subtitle">Mobile Web Edition</p>
+
+        <div class="card">
+            <div class="control-group">
+                <label for="method">생성 방법:</label>
+                <select id="method">
+                    <option value="random">기본 랜덤</option>
+                    <option value="balance">홀수/짝수 균형</option>
+                    <option value="range">숫자 범위 분포</option>
+                    <option value="prime">소수 포함</option>
+                    <option value="consecutive">연속 번호 포함</option>
+                </select>
+                <div class="method-info" id="methodInfo">1~45 숫자에서 랜덤하게 6개 선택</div>
+            </div>
+
+            <div class="control-group">
+                <label for="games">게임 수:</label>
+                <select id="games">
+                    <option value="1">1게임</option>
+                    <option value="2">2게임</option>
+                    <option value="3">3게임</option>
+                    <option value="5" selected>5게임</option>
+                    <option value="7">7게임</option>
+                    <option value="10">10게임</option>
+                </select>
+            </div>
+
+            <button onclick="generateNumbers()" id="generateBtn">
+                🎲 번호 생성하기
+            </button>
+        </div>
+
+        <div id="results"></div>
+    </div>
+
+    <script>
+        // 생성 방법 정보
+        const methodInfo = {
+            'random': '1~45 숫자에서 랜덤하게 6개 선택',
+            'balance': '홀수와 짝수의 균형을 맞춘 번호 생성',
+            'range': '1-15, 16-30, 31-45 구간별로 고르게 분포',
+            'prime': '소수(2,3,5,7,11,13,17,19,23,29,31,37,41,43) 포함',
+            'consecutive': '연속된 숫자가 포함된 조합'
+        };
+
+        // 방법 선택 시 설명 업데이트
+        document.getElementById('method').addEventListener('change', function() {
+            document.getElementById('methodInfo').textContent = methodInfo[this.value];
+        });
+
+        // 로또 번호 생성 로직
+        function generateRandom() {
+            const numbers = [];
+            while (numbers.length < 6) {
+                const num = Math.floor(Math.random() * 45) + 1;
+                if (!numbers.includes(num)) {
+                    numbers.push(num);
+                }
+            }
+            return numbers.sort((a, b) => a - b);
+        }
+
+        function generateBalance() {
+            let attempts = 0;
+            while (attempts < 100) {
+                const numbers = generateRandom();
+                const oddCount = numbers.filter(n => n % 2 === 1).length;
+                if (oddCount >= 2 && oddCount <= 4) {
+                    return numbers;
+                }
+                attempts++;
+            }
+            return generateRandom();
+        }
+
+        function generateRange() {
+            const numbers = [];
+            const ranges = [[1, 15], [16, 30], [31, 45]];
+            
+            // 각 구간에서 2개씩
+            ranges.forEach(([start, end]) => {
+                while (numbers.length < (ranges.indexOf([start, end]) + 1) * 2) {
+                    const num = Math.floor(Math.random() * (end - start + 1)) + start;
+                    if (!numbers.includes(num)) {
+                        numbers.push(num);
+                    }
+                }
+            });
+            
+            return numbers.sort((a, b) => a - b);
+        }
+
+        function generatePrime() {
+            const primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43];
+            let attempts = 0;
+            
+            while (attempts < 100) {
+                const numbers = generateRandom();
+                const primeCount = numbers.filter(n => primes.includes(n)).length;
+                if (primeCount >= 2) {
+                    return numbers;
+                }
+                attempts++;
+            }
+            return generateRandom();
+        }
+
+        function generateConsecutive() {
+            let attempts = 0;
+            
+            while (attempts < 100) {
+                const numbers = generateRandom();
+                for (let i = 0; i < numbers.length - 1; i++) {
+                    if (numbers[i + 1] === numbers[i] + 1) {
+                        return numbers;
+                    }
+                }
+                attempts++;
+            }
+            return generateRandom();
+        }
+
+        // 번호 생성 메인 함수
+        function generateNumbers() {
+            const method = document.getElementById('method').value;
+            const gameCount = parseInt(document.getElementById('games').value);
+            const resultsDiv = document.getElementById('results');
+            
+            // 로딩 상태
+            document.getElementById('generateBtn').disabled = true;
+            document.getElementById('generateBtn').textContent = '생성 중...';
+            
+            // 결과 초기화
+            resultsDiv.innerHTML = '';
+            
+            setTimeout(() => {
+                const results = [];
+                
+                for (let i = 0; i < gameCount; i++) {
+                    let numbers;
+                    switch (method) {
+                        case 'balance': numbers = generateBalance(); break;
+                        case 'range': numbers = generateRange(); break;
+                        case 'prime': numbers = generatePrime(); break;
+                        case 'consecutive': numbers = generateConsecutive(); break;
+                        default: numbers = generateRandom();
+                    }
+                    results.push(numbers);
+                }
+                
+                displayResults(results);
+                
+                // 버튼 복원
+                document.getElementById('generateBtn').disabled = false;
+                document.getElementById('generateBtn').textContent = '🎲 번호 생성하기';
+            }, 500);
+        }
+
+        // 결과 표시
+        function displayResults(results) {
+            const resultsDiv = document.getElementById('results');
+            
+            results.forEach((numbers, index) => {
+                const gameCard = document.createElement('div');
+                gameCard.className = 'game-card';
+                
+                const gameTitle = document.createElement('div');
+                gameTitle.className = 'game-title';
+                gameTitle.textContent = `Game ${index + 1}`;
+                
+                const numbersContainer = document.createElement('div');
+                numbersContainer.className = 'numbers-container';
+                
+                numbers.forEach(number => {
+                    const ball = document.createElement('div');
+                    ball.className = 'lotto-ball';
+                    ball.textContent = number;
+                    
+                    // 번호별 색상 클래스
+                    if (number <= 10) ball.classList.add('ball-1-10');
+                    else if (number <= 20) ball.classList.add('ball-11-20');
+                    else if (number <= 30) ball.classList.add('ball-21-30');
+                    else if (number <= 40) ball.classList.add('ball-31-40');
+                    else ball.classList.add('ball-41-45');
+                    
+                    numbersContainer.appendChild(ball);
+                });
+                
+                gameCard.appendChild(gameTitle);
+                gameCard.appendChild(numbersContainer);
+                resultsDiv.appendChild(gameCard);
+            });
+        }
+
+        // PWA 기능
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(registration => console.log('SW registered'))
+                    .catch(error => console.log('SW registration failed'));
+            });
+        }
+
+        // 설치 프롬프트
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            deferredPrompt = e;
+            const installButton = document.createElement('button');
+            installButton.textContent = '📱 홈 화면에 추가';
+            installButton.onclick = () => {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    deferredPrompt = null;
+                    installButton.remove();
+                });
+            };
+            document.querySelector('.container').appendChild(installButton);
+        });
+    </script>
+</body>
+</html>
